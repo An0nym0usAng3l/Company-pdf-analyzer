@@ -1,0 +1,14 @@
+{
+  "name": "company-researcher",
+  "version": "1.0.0",
+  "description": "Extract data from pdf and perform online research with data",
+  "main": "index.js",
+  "author": "Alhaji",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@huggingface/inference": "^2.6.4",
+    "pdf-to-img": "^2.1.2", 
+    "pdfreader": "^3.0.2"
+  }
+}
