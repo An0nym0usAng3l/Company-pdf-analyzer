@@ -1,11 +1,21 @@
 import { PdfReader } from "pdfreader";
 import { pdf } from "pdf-to-img";
+import OpenAI from "openai";
+import dotenv from "dotenv";
+dotenv.config();
 
 import { HfInference } from "@huggingface/inference";
 
 const hf = new HfInference(process.env.HF_API_KEY);
+// const configuration = new Configuration({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
+// const openai = new OpenAIApi(configuration);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const pdfPath = process.argv[2];
+
+const extra_command = process.env.EXTRA_COMMAND;
 
 if (!pdfPath) {
   console.error(
@@ -50,7 +60,6 @@ async function convertPdfToTextAndExtractRelevantData(pdfPath) {
       console.error("error:", err);
       return null;
     } else if (!item) {
-      console.log("Here");
       await extractCompanyData(fileContent);
       stopLoadingAnimation(loadingAnimation);
     } else if (item.text) {
@@ -64,55 +73,24 @@ async function convertImageToText(image) {}
 
 // RELEVANT DATA EXTRACTION
 async function extractCompanyData(pdfDetails) {
-  const questionsMap = {
-    company_name: "What is the name of the company?",
-    location: "Where is the location?",
-    website: "Where is the website?",
-    email: "Where is the email?",
-    desc: "A short summary of what the company does",
-    industry: "In which industry does the company operate?",
-    founded: "When was the company founded?",
-    revenue: "What is the company's annual revenue?",
-    employees: "How many employees does the company have?",
-    competitors: "Who are the main competitors of the company?",
-    key_products:
-      "What are the key products or services offered by the company?",
-    recent_news: "Any recent news or developments about the company?",
-    social_media: "What are the company's social media profiles?",
-    partnerships: "Does the company have any notable partnerships?",
-    challenges: "What challenges is the company currently facing?",
-    future_plans: "What are the company's future plans or strategies?",
-  };
+  console.log("Analyzing extracted data.");
+  const completion = await openai.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: "You are a helpful company/industry analyst.",
+      },
+      {
+        role: "user",
+        content: `
+       ${extra_command}
+       ${pdfDetails}`,
+      },
+    ],
+    model: "gpt-3.5-turbo",
+  });
 
-  const companyDetails = {};
-
-  for (const key in questionsMap) {
-    if (questionsMap.hasOwnProperty(key)) {
-      const question = questionsMap[key];
-      const result = await hf.questionAnswering({
-        model: "deepset/roberta-base-squad2",
-        inputs: {
-          question,
-          context: pdfDetails,
-        },
-      });
-      companyDetails[key] = result && result.answer ? result.answer : null;
-    }
-  }
-  console.log("Extracted details", companyDetails);
-
-  // NEXT STEPS
-
-  // SEARCHING ONLINE ABOUT THIS PARTICULAR DATA ${companyDetails}
-  /* 
-        https://api.opencorporates.com/documentation/API-Reference
-        Using opencorporates API to do further research, Can't do that right now as my IP was banned from using the API 😪
-  */
-
-  // GENERATING A VALID REPORT
-  /* 
-        Using the gathered information to generate a report following a particular template
-  */
+  console.log(completion.choices[0]?.message.content);
   return;
 }
 

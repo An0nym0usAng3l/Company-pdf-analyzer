@@ -8,7 +8,9 @@
   "type": "module",
   "dependencies": {
     "@huggingface/inference": "^2.6.4",
-    "pdf-to-img": "^2.1.2", 
+    "dotenv": "^16.3.1",
+    "openai": "^4.24.1",
+    "pdf-to-img": "^2.1.2",
     "pdfreader": "^3.0.2"
   }
 }
