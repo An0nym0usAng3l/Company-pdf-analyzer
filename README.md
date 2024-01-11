@@ -10,7 +10,7 @@ node index ./synot.pdf
 // or
 node index ./clyde.pdf
 
-// Using your another PDF
+// Using another PDF
 node index /path/to/file
 
 ```
